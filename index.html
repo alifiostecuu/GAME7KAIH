@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7KAIH - Extreme Morning Challenge</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(140deg,#071b38,#075985,#f59e0b);
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.game {
+  max-width: 500px;
+  margin: auto;
+  background: #ffffff;
+  color: #17324d;
+  padding: 22px;
+  border-radius: 25px;
+  box-shadow: 0 10px 30px #0005;
+}
+
+h1 { color: #087db5; }
+
+.subtitle { color: #64748b; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.stat {
+  padding: 12px 5px;
+  background: #eaf5ff;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.level {
+  background: #fff2d6;
+  padding: 14px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+}
+
+.timer {
+  font-size: 27px;
+  font-weight: bold;
+  color: #dc2626;
+}
+
+.challenge {
+  background: #edf7ff;
+  padding: 20px;
+  border-radius: 16px;
+  margin: 15px 0;
+}
+
+.emoji { font-size: 65px; }
+
+.question {
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin: 7px 0;
+  border: none;
+  border-radius: 12px;
+  background: #087db5;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.option {
+  background: white;
+  color: #17324d;
+  border: 2px solid #cbddea;
+  text-align: left;
+}
+
+.option:hover {
+  background: #dcefff;
+}
+
+#feedback {
+  min-height: 45px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.hidden { display: none; }
+
+.progress {
+  height: 12px;
+  background: #dbeafe;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.fill {
+  height: 100%;
+  background: #16a34a;
+  width: 0%;
+  transition: .3s;
+}
+
+.small {
+  color: #64748b;
+  font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+<h1>🌅 7KAIH</h1>
+<h2>EXTREME MORNING CHALLENGE</h2>
+<p class="subtitle">Misi Khusus: Bangun Pagi</p>
+
+<div class="stats">
+  <div class="stat">⭐ Poin<br><span id="score">0</span></div>
+  <div class="stat">❤️ Nyawa<br><span id="lives">3</span></div>
+  <div class="stat">⏱️ Waktu<br><span id="timer">15</span></div>
+</div>
+
+<div class="level">
+  <b id="levelText">LEVEL 1 / 7</b>
+  <div class="progress">
+    <div class="fill" id="progress"></div>
+  </div>
+</div>
+
+<div id="startScreen">
+  <div class="emoji">⏰</div>
+  <h2>BERANI MENGHADAPI TANTANGAN?</h2>
+  <p>
+  Bangun pagi bukan hanya tentang membuka mata.
+  Kamu harus memiliki kedisiplinan dan tanggung jawab!
+  </p>
+  <p>⚠️ 7 tantangan semakin sulit. Waktu terbatas!</p>
+  <button onclick="startGame()">MULAI TANTANGAN 🚀</button>
+</div>
+
+<div id="gameScreen" class="hidden">
+  <div class="challenge">
+    <div class="emoji" id="emoji"></div>
+    <h3 id="title"></h3>
+    <p class="question" id="question"></p>
+  </div>
+
+  <div id="options"></div>
+  <p id="feedback"></p>
+
+  <button id="nextBtn" class="hidden"
+  onclick="nextLevel()">LANJUT LEVEL ➜</button>
+</div>
+
+<div id="endScreen" class="hidden">
+  <div class="emoji" id="endEmoji">🏆</div>
+  <h2 id="endTitle"></h2>
+  <p id="endMessage"></p>
+  <h2>Skor Akhir: <span id="finalScore"></span></h2>
+  <button onclick="restart()">COBA LAGI 🔄</button>
+</div>
+
+<p class="small">7KAIH • Tantangan Bangun Pagi</p>
+
+</div>
+
+<script>
+
+const levels = [
+
+{
+emoji:"⏰",
+title:"LEVEL 1 - MUSUH ALARM",
+question:"Alarm berbunyi pukul 04.45. Kamu masih mengantuk. Apa keputusan terbaik?",
+options:[
+"Mematikan alarm lalu tidur lagi",
+"Bangun, duduk sejenak, lalu memulai rutinitas pagi",
+"Mengabaikan alarm"
+],
+answer:1,
+explain:"Benar! Disiplin dimulai dari kemauan untuk bangun."
+},
+
+{
+emoji:"🌄",
+title:"LEVEL 2 - UJIAN KONSISTENSI",
+question:"Kamu berhasil bangun pagi selama 3 hari. Pada hari keempat kamu merasa malas. Apa yang harus dilakukan?",
+options:[
+"Tidak perlu bangun pagi lagi",
+"Tetap bangun sesuai jadwal yang sudah direncanakan",
+"Menunggu orang lain membangunkan"
+],
+answer:1,
+explain:"Konsistensi lebih penting daripada semangat sesaat."
+},
+
+{
+emoji:"🛏️",
+title:"LEVEL 3 - GODAAN TEMPAT TIDUR",
+question:"Kamu sudah bangun, tetapi ingin kembali tidur. Bagaimana cara menjaga rutinitas?",
+options:[
+"Menyiapkan pakaian dan memulai kegiatan pagi",
+"Berbaring sambil bermain HP",
+"Tidur kembali tanpa memikirkan jadwal"
+],
+answer:0,
+explain:"Mengawali aktivitas membantu membangun kebiasaan positif."
+},
+
+{
+emoji:"📅",
+title:"LEVEL 4 - MANAJEMEN WAKTU",
+question:"Kamu harus berangkat sekolah pukul 06.30. Kegiatan pagi membutuhkan waktu 60 menit. Kapan paling lambat kamu perlu bangun?",
+options:[
+"Pukul 06.15",
+"Pukul 06.00",
+"Pukul 05.30"
+],
+answer:2,
+explain:"Pukul 05.30 memberi waktu 60 menit sebelum pukul 06.30."
+},
+
+{
+emoji:"🧠",
+title:"LEVEL 5 - STRATEGI TIDUR",
+question:"Kamu ingin bangun pukul 05.00 dengan waktu tidur yang cukup. Strategi terbaik adalah?",
+options:[
+"Begadang dan mengandalkan alarm",
+"Mengatur waktu tidur lebih awal secara konsisten",
+"Tidur hanya ketika sudah sangat mengantuk"
+],
+answer:1,
+explain:"Tidur cukup dan teratur membantu tubuh bangun lebih segar."
+},
+
+{
+emoji:"🔥",
+title:"LEVEL 6 - TANTANGAN AKHIR",
+question:"Selama seminggu kamu berhasil bangun pagi, tetapi pada akhir pekan tidak ada kegiatan. Apa tindakan terbaik?",
+options:[
+"Menjaga jadwal bangun yang relatif konsisten",
+"Bangun sesuka hati hingga siang",
+"Tidak perlu menjaga kebiasaan lagi"
+],
+answer:0,
+explain:"Menjaga pola bangun yang konsisten membantu mempertahankan kebiasaan."
+},
+
+{
+emoji:"👑",
+title:"BOSS LEVEL - MASTER BANGUN PAGI",
+question:"Kamu ingin membangun kebiasaan bangun pagi dalam jangka panjang. Strategi PALING lengkap adalah?",
+options:[
+"Mengandalkan alarm tanpa mengatur kebiasaan tidur",
+"Bangun pagi hanya ketika ada kegiatan penting",
+"Mengatur waktu tidur, memasang alarm, menyiapkan kebutuhan malam sebelumnya, dan konsisten menjalankan rutinitas"
+],
+answer:2,
+explain:"LUAR BIASA! Kamu memahami bahwa bangun pagi membutuhkan persiapan, tidur cukup, dan konsistensi."
+}
+
+];
+
+let current = 0;
+let score = 0;
+let lives = 3;
+let time = 15;
+let clock;
+let answered = false;
+
+function startGame() {
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  showLevel();
+}
+
+function showLevel() {
+  answered = false;
+  time = 15;
+
+  let data = levels[current];
+
+  document.getElementById("levelText").innerText =
+    current === 6 ? "👑 BOSS LEVEL" :
+    "LEVEL " + (current+1) + " / 7";
+
+  document.getElementById("progress").style.width =
+    (current/7*100) + "%";
+
+  document.getElementById("emoji").innerText = data.emoji;
+  document.getElementById("title").innerText = data.title;
+  document.getElementById("question").innerText = data.question;
+  document.getElementById("feedback").innerText = "";
+  document.getElementById("nextBtn").classList.add("hidden");
+
+  let html = "";
+
+  data.options.forEach((option,i) => {
+    html += `<button class="option"
+      onclick="answer(${i})">
+      ${String.fromCharCode(65+i)}. ${option}
+    </button>`;
+  });
+
+  document.getElementById("options").innerHTML = html;
+
+  updateStats();
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(clock);
+
+  document.getElementById("timer").innerText = time;
+
+  clock = setInterval(() => {
+    time--;
+    document.getElementById("timer").innerText = time;
+
+    if(time <= 0) {
+      clearInterval(clock);
+      if(!answered) {
+        lives--;
+        answered = true;
+
+        document.getElementById("feedback").innerText =
+          "⏰ WAKTU HABIS! Kamu harus lebih cepat.";
+
+        disableOptions();
+        updateStats();
+
+        if(lives <= 0) {
+          setTimeout(() => endGame(false),1000);
+        } else {
+          document.getElementById("nextBtn").classList.remove("hidden");
+        }
+      }
+    }
+  },1000);
+}
+
+function answer(choice) {
+  if(answered) return;
+
+  answered = true;
+  clearInterval(clock);
+
+  let data = levels[current];
+
+  if(choice === data.answer) {
+    let bonus = time * 5;
+    score += 100 + bonus;
+
+    document.getElementById("feedback").innerText =
+      "✅ BENAR! +" + (100+bonus) + " POIN\n" + data.explain;
+
+    document.getElementById("feedback").style.color = "#15803d";
+  } else {
+    lives--;
+
+    document.getElementById("feedback").innerText =
+      "❌ JAWABAN KURANG TEPAT!\n" + data.explain;
+
+    document.getElementById("feedback").style.color = "#dc2626";
+  }
+
+  disableOptions();
+  updateStats();
+
+  if(lives <= 0) {
+    setTimeout(() => endGame(false),1200);
+  } else {
+    document.getElementById("nextBtn").classList.remove("hidden");
+  }
+}
+
+function disableOptions() {
+  document.querySelectorAll(".option").forEach((button,i) => {
+    button.disabled = true;
+
+    if(i === levels[current].answer) {
+      button.style.background = "#bbf7d0";
+    }
+  });
+}
+
+function nextLevel() {
+  current++;
+
+  if(current >= levels.length) {
+    endGame(true);
+  } else {
+    showLevel();
+  }
+}
+
+function updateStats() {
+  document.getElementById("score").innerText = score;
+  document.getElementById("lives").innerText = lives;
+}
+
+function endGame(won) {
+  clearInterval(clock);
+
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("endScreen").classList.remove("hidden");
+
+  document.getElementById("progress").style.width =
+    (won ? 100 : current/7*100) + "%";
+
+  document.getElementById("finalScore").innerText = score;
+
+  if(won) {
+    document.getElementById("endEmoji").innerText = "🏆";
+    document.getElementById("endTitle").innerText =
+      "MASTER BANGUN PAGI!";
+    document.getElementById("endMessage").innerText =
+      "Kamu berhasil melewati semua tantangan, termasuk Boss Level. Kamu layak menjadi Master Bangun Pagi!";
+  } else {
+    document.getElementById("endEmoji").innerText = "💪";
+    document.getElementById("endTitle").innerText =
+      "MISI BELUM BERHASIL!";
+    document.getElementById("endMessage").innerText =
+      "Nyawamu habis. Pelajari tantangannya dan coba lagi!";
+  }
+}
+
+function restart() {
+  clearInterval(clock);
+
+  current = 0;
+  score = 0;
+  lives = 3;
+
+  document.getElementById("endScreen").classList.add("hidden");
+  document.getElementById("startScreen").classList.remove("hidden");
+
+  document.getElementById("progress").style.width = "0%";
+
+  updateStats();
+  document.getElementById("timer").innerText = 15;
+}
+
+</script>
+</body>
+</html>
